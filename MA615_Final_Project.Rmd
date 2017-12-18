@@ -1,12 +1,14 @@
 ---
-title: "MA615 Final Project"
+title: "MA615 Twitter Data Mining Projct"
+subtitle: "Smart Home"
 author: "Mengyun Li"
-date: "12/4/2017"
-output: pdf_document
+date: "Dec 4, 2017"
+output: html_document
+always_allow_html: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, warning= FALSE}
+knitr::opts_chunk$set(echo = FALSE)
 library(plyr)
 library(devtools)
 library(twitteR)
@@ -25,12 +27,14 @@ library(ggmap)
 library(maptools)
 library(maps)
 library(gridExtra)
+library(leaflet)
+library(knitr)
 
 ```
 
 
 
-```{r}
+```{r, , warning= FALSE}
 api_key <- 	"a7mnlj2IxKAx5HQPyp47RSDcF"
 api_secret <- "tWhIRKBBFR3AAPhS8pJYfjywos1pxXcymjPsSKDKAjwkByHHeW"
 access_token <- "927637519667269632-t5qJ7vvlWcgBb6ZQpSqsdC1TOznasxj"
@@ -38,21 +42,31 @@ access_token_secret <- "n3RCUHtWsPh0cFKniMzz0DN1d7qSRVQZVAMYht7qBsUGs"
 
 setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
 ```
-```{r}
+# 1. Introduction: What is Smart Home ?
+
+Smart Home is building automation for a home. It involves the control and automation of lighting, heating (such as smart thermostats), ventilation, air conditioning (HVAC), and security, as well as home appliances such as washer/dryers, ovens or refrigerators/freezers. Wi-Fi is often used for remote monitoring and control. Home devices, when remotely monitored and controlled via the Internet, are an important constituent of the Internet of Things.
+
+This analysis compares two smart home product I like most, Google Home Mini and Echo Dot. Through Google Home I can get hands-free help from the Google Assistant. Get answers, play songs, tackle your day, enjoy your entertainment and control your smart home with just my voice. Echo Pot is a similar product made by Amazon"
+
+For more information, visit product webpage. 
+Google home: https://store.google.com/product/google_home
+Echo Dot:https://www.amazon.com/Amazon-Echo-Dot-Previous-Generation/b?ie=UTF8&node=14047587011
+```{r, warning= FALSE}
 smarthome1 <- searchTwitter('smarthome',since = "2010-01-01", until = "2017-12-15", lang = "en", n = 20000)
 smarthome1 <- twListToDF(smarthome1)
 #twitter data for mapping
 smarthome.df<-subset(smarthome1, !is.na(smarthome1$latitude))
 saveRDS(smarthome.df, file="smarthome_geo.rds")
 
-
 smarthome <- searchTwitter('smarthome',since = "2017-01-01", until = "2017-12-15", lang = "en", n = 2000)
 smarthome <- twListToDF(smarthome)
-
+saveRDS(smarthome, file="SmartHome.rds")
 
 ```
 
-##Word cloud for Smarthome on twitter
+# 2. Word cloud - A helicopter View
+
+##"Home Smart"
 ```{r}
 smarthome$text <- iconv(smarthome$text,from = "latin1", to = "ASCII", sub = "")
 ## Create a corpus.
@@ -68,38 +82,13 @@ wordCorpus <- tm_map(wordCorpus, removeWords, c('smarthome'))
 
 ## Perform stemming.
 wordCorpus <- tm_map(wordCorpus, stemDocument)
-saveRDS(smarthome, file="SmartHome.rds")
+
 ## Plot
 set.seed(123)
 wordcloud(wordCorpus, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
 
 ```
-
-
-
-```{r}
-echodot <- searchTwitter('echodot',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
-echodot <- twListToDF(echodot)
-
-echodot$text <- iconv(echodot$text,from = "latin1", to = "ASCII", sub = "")
-## Create a corpus.
-wordCorpus1 <- Corpus(VectorSource(str_replace_all(smarthome$text, "@","")))
-## Convert the corpus to a plain text document.
-wordCorpus1 <- tm_map(wordCorpus1, PlainTextDocument)
-## Remove all punctuation and stopwords.
-wordCorpus1 <- tm_map(wordCorpus1, removePunctuation)
-wordCorpus1 <- tm_map(wordCorpus1, content_transformer(tolower))
-wordCorpus1 <- tm_map(wordCorpus1, removeWords, stopwords('english'))
-wordCorpus1 <- tm_map(wordCorpus1, removeWords, c('the', 'this', stopwords('english')))
-wordCorpus1 <- tm_map(wordCorpus1, removeWords, c('smarthome'))
-
-## Perform stemming.
-wordCorpus1 <- tm_map(wordCorpus1, stemDocument)
-saveRDS(echodot, file="echodot.rds")
-## Plot
-set.seed(123)
-wordcloud(wordCorpus1, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
-```
+## "Google Home"
 
 ```{r}
 googlehome <- searchTwitter('googlehome',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
@@ -108,7 +97,7 @@ saveRDS(googlehome, file="googlehome.rds")
 
 googlehome$text <- iconv(googlehome$text,from = "latin1", to = "ASCII", sub = "")
 ## Create a corpus.
-wordCorpus2 <- Corpus(VectorSource(str_replace_all(smarthome$text, "@","")))
+wordCorpus2 <- Corpus(VectorSource(str_replace_all(googlehome$text, "@","")))
 ## Convert the corpus to a plain text document.
 wordCorpus2 <- tm_map(wordCorpus2, PlainTextDocument)
 ## Remove all punctuation and stopwords.
@@ -126,9 +115,36 @@ set.seed(123)
 wordcloud(wordCorpus2, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
 ```
 
-```{r}
-smarthome<-readRDS("SmartHome.rds")
+## "Echo Dot"
 
+```{r}
+echodot <- searchTwitter('echodot',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
+echodot <- twListToDF(echodot)
+
+echodot <- readRDS('echodot.rds')
+echodot$text <- iconv(echodot$text,from = "latin1", to = "ASCII", sub = "")
+## Create a corpus.
+wordCorpus1 <- Corpus(VectorSource(str_replace_all(echodot$text, "@","")))
+## Convert the corpus to a plain text document.
+wordCorpus1 <- tm_map(wordCorpus1, PlainTextDocument)
+## Remove all punctuation and stopwords.
+wordCorpus1 <- tm_map(wordCorpus1, removePunctuation)
+wordCorpus1 <- tm_map(wordCorpus1, content_transformer(tolower))
+wordCorpus1 <- tm_map(wordCorpus1, removeWords, stopwords('english'))
+wordCorpus1 <- tm_map(wordCorpus1, removeWords, c('the', 'this', stopwords('english')))
+wordCorpus1 <- tm_map(wordCorpus1, removeWords, c('smarthome'))
+
+## Perform stemming.
+wordCorpus1 <- tm_map(wordCorpus1, stemDocument)
+## Plot
+set.seed(123)
+wordcloud(wordCorpus1, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
+```
+
+
+# 3. Sentiment Analysis
+
+```{r}
 pos.words <- scan("positive-words.txt",what="character",comment.char=";")
 neg.words <- scan("negative-words.txt",what="character",comment.char=";")
 
@@ -175,16 +191,23 @@ score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
 	return(scores.df)
 }
 
-smarthome$text <- str_replace_all(smarthome$text, "@", "")
-result <- score.sentiment(smarthome$text,pos.words,neg.words)
-
 echodot <- readRDS("echodot.rds")
 echodot$text <- str_replace_all(echodot$text, "@", "")
 echodot$text <- str_replace_all(echodot$text, "#", "")
 result_echo <- score.sentiment(echodot$text,pos.words,neg.words)
 
-bar_1 <- ggplot(result_echo,aes(result_echo$score))+geom_bar(width = 0.3)
-bar_1
+bar_echo <- ggplot(result_echo,aes(result_echo$score))+geom_bar(width = 0.3)
+
+googlehome <- readRDS("googlehome.rds")
+googlehome$text <- str_replace_all(googlehome$text, "@", "")
+googlehome$text <- str_replace_all(googlehome$text, "#", "")
+result_google <- score.sentiment(googlehome$text,pos.words,neg.words)
+
+bar_google <- ggplot(result_google,aes(result_google$score))+geom_bar(width = 0.3)
+saveRDS(result_echo, file="result_echo.rds")
+saveRDS(result_google, file="result_google.rds")
+
+grid.arrange(bar_echo, bar_google, ncol=2)
 ```
 
 
@@ -195,10 +218,10 @@ mapdata$latitude<-as.numeric(mapdata$latitude)
 x <- mapdata$longitude
 y <- mapdata$latitude
 
-map <- NULL
-mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
-map <- ggplot() + mapWorld + geom_point(aes(x, y), data = mapdata ,color="blue", size=1) 
-map
+leaflet(data = mapdata)%>%
+  addTiles()%>%
+  addCircleMarkers(~x,~y, col="red")
+
 ```
 
 
