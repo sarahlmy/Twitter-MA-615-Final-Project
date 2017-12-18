@@ -1,0 +1,223 @@
+---
+title: "MA615 Final Project"
+author: "Mengyun Li"
+date: "12/4/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(plyr)
+library(devtools)
+library(twitteR)
+library(tidyverse)
+library(streamR)
+library(wordcloud)
+library(tm)
+library(SnowballC)
+library(stringr)
+library(RColorBrewer)
+library(reshape2)
+library(sentimentr)
+library(ggplot2)
+library(tidytext)
+library(ggmap)
+library(maptools)
+library(maps)
+library(gridExtra)
+
+```
+
+
+
+```{r}
+api_key <- 	"a7mnlj2IxKAx5HQPyp47RSDcF"
+api_secret <- "tWhIRKBBFR3AAPhS8pJYfjywos1pxXcymjPsSKDKAjwkByHHeW"
+access_token <- "927637519667269632-t5qJ7vvlWcgBb6ZQpSqsdC1TOznasxj"
+access_token_secret <- "n3RCUHtWsPh0cFKniMzz0DN1d7qSRVQZVAMYht7qBsUGs"
+
+setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
+```
+```{r}
+smarthome1 <- searchTwitter('smarthome',since = "2010-01-01", until = "2017-12-15", lang = "en", n = 20000)
+smarthome1 <- twListToDF(smarthome1)
+#twitter data for mapping
+smarthome.df<-subset(smarthome1, !is.na(smarthome1$latitude))
+saveRDS(smarthome.df, file="smarthome_geo.rds")
+
+
+smarthome <- searchTwitter('smarthome',since = "2017-01-01", until = "2017-12-15", lang = "en", n = 2000)
+smarthome <- twListToDF(smarthome)
+
+
+```
+
+##Word cloud for Smarthome on twitter
+```{r}
+smarthome$text <- iconv(smarthome$text,from = "latin1", to = "ASCII", sub = "")
+## Create a corpus.
+wordCorpus <- Corpus(VectorSource(str_replace_all(smarthome$text, "@","")))
+## Convert the corpus to a plain text document.
+wordCorpus <- tm_map(wordCorpus, PlainTextDocument)
+## Remove all punctuation and stopwords.
+wordCorpus <- tm_map(wordCorpus, removePunctuation)
+wordCorpus <- tm_map(wordCorpus, content_transformer(tolower))
+wordCorpus <- tm_map(wordCorpus, removeWords, stopwords('english'))
+wordCorpus <- tm_map(wordCorpus, removeWords, c('the', 'this', stopwords('english')))
+wordCorpus <- tm_map(wordCorpus, removeWords, c('smarthome'))
+
+## Perform stemming.
+wordCorpus <- tm_map(wordCorpus, stemDocument)
+saveRDS(smarthome, file="SmartHome.rds")
+## Plot
+set.seed(123)
+wordcloud(wordCorpus, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
+
+```
+
+
+
+```{r}
+echodot <- searchTwitter('echodot',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
+echodot <- twListToDF(echodot)
+
+echodot$text <- iconv(echodot$text,from = "latin1", to = "ASCII", sub = "")
+## Create a corpus.
+wordCorpus1 <- Corpus(VectorSource(str_replace_all(smarthome$text, "@","")))
+## Convert the corpus to a plain text document.
+wordCorpus1 <- tm_map(wordCorpus1, PlainTextDocument)
+## Remove all punctuation and stopwords.
+wordCorpus1 <- tm_map(wordCorpus1, removePunctuation)
+wordCorpus1 <- tm_map(wordCorpus1, content_transformer(tolower))
+wordCorpus1 <- tm_map(wordCorpus1, removeWords, stopwords('english'))
+wordCorpus1 <- tm_map(wordCorpus1, removeWords, c('the', 'this', stopwords('english')))
+wordCorpus1 <- tm_map(wordCorpus1, removeWords, c('smarthome'))
+
+## Perform stemming.
+wordCorpus1 <- tm_map(wordCorpus1, stemDocument)
+saveRDS(echodot, file="echodot.rds")
+## Plot
+set.seed(123)
+wordcloud(wordCorpus1, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
+```
+
+```{r}
+googlehome <- searchTwitter('googlehome',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
+googlehome <- twListToDF(googlehome)
+saveRDS(googlehome, file="googlehome.rds")
+
+googlehome$text <- iconv(googlehome$text,from = "latin1", to = "ASCII", sub = "")
+## Create a corpus.
+wordCorpus2 <- Corpus(VectorSource(str_replace_all(smarthome$text, "@","")))
+## Convert the corpus to a plain text document.
+wordCorpus2 <- tm_map(wordCorpus2, PlainTextDocument)
+## Remove all punctuation and stopwords.
+wordCorpus2 <- tm_map(wordCorpus2, removePunctuation)
+wordCorpus2 <- tm_map(wordCorpus2, content_transformer(tolower))
+wordCorpus2 <- tm_map(wordCorpus2, removeWords, stopwords('english'))
+wordCorpus2 <- tm_map(wordCorpus2, removeWords, c('the', 'this', stopwords('english')))
+wordCorpus2 <- tm_map(wordCorpus2, removeWords, c('smarthome'))
+
+## Perform stemming.
+wordCorpus2 <- tm_map(wordCorpus2, stemDocument)
+
+## Plot
+set.seed(123)
+wordcloud(wordCorpus2, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
+```
+
+```{r}
+smarthome<-readRDS("SmartHome.rds")
+
+pos.words <- scan("positive-words.txt",what="character",comment.char=";")
+neg.words <- scan("negative-words.txt",what="character",comment.char=";")
+
+pos.words = c(pos.words, 'new','nice' ,'good', 'horizon','best','perfect')
+neg.words = c(neg.words, 'wtf', 'behind','feels', 'ugly', 'back','worse' , 'shitty', 'bad', 'no','freaking','sucks','horrible')
+
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+	require(plyr)
+	require(stringr)
+	
+	# we got a vector of sentences. plyr will handle a list or a vector as an "l" for us
+	# we want a simple array of scores back, so we use "l" + "a" + "ply" = laply:
+	scores = laply(sentences, function(sentence, pos.words, neg.words) {
+		
+		# clean up sentences with R's regex-driven global substitute, gsub():
+		sentence = gsub('[[:punct:]]', '', sentence)
+		sentence = gsub('[[:cntrl:]]', '', sentence)
+		sentence = gsub('\\d+', '', sentence)
+		# and convert to lower case:
+		sentence = tolower(sentence)
+
+		# split into words. str_split is in the stringr package
+		word.list = str_split(sentence, '\\s+')
+		# sometimes a list() is one level of hierarchy too much
+		words = unlist(word.list)
+
+		# compare our words to the dictionaries of positive & negative terms
+		pos.matches = match(words, pos.words)
+		neg.matches = match(words, neg.words)
+	
+		# match() returns the position of the matched term or NA
+		# we just want a TRUE/FALSE:
+		pos.matches = !is.na(pos.matches)
+		neg.matches = !is.na(neg.matches)
+
+		# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+		score = sum(pos.matches) - sum(neg.matches)
+
+		return(score)
+	}, pos.words, neg.words, .progress=.progress )
+
+	scores.df = data.frame(score=scores, text=sentences)
+	return(scores.df)
+}
+
+smarthome$text <- str_replace_all(smarthome$text, "@", "")
+result <- score.sentiment(smarthome$text,pos.words,neg.words)
+
+echodot <- readRDS("echodot.rds")
+echodot$text <- str_replace_all(echodot$text, "@", "")
+echodot$text <- str_replace_all(echodot$text, "#", "")
+result_echo <- score.sentiment(echodot$text,pos.words,neg.words)
+
+bar_1 <- ggplot(result_echo,aes(result_echo$score))+geom_bar(width = 0.3)
+bar_1
+```
+
+
+```{r}
+mapdata<-readRDS("smarthome_geo.rds")
+mapdata$longitude<-as.numeric(mapdata$longitude)
+mapdata$latitude<-as.numeric(mapdata$latitude)
+x <- mapdata$longitude
+y <- mapdata$latitude
+
+map <- NULL
+mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+map <- ggplot() + mapWorld + geom_point(aes(x, y), data = mapdata ,color="blue", size=1) 
+map
+```
+
+
+```{r}
+smarthome <- readRDS("SmartHome.rds")
+smarthome$favoriteCount <- as.numeric(smarthome$favoriteCount)
+
+timeline1 <- ggplot(smarthome, aes(x=created, y=favoriteCount)) +
+  geom_line(col='orange')+labs(x="Time", y="Number of Favourates")
+timeline2 <- ggplot(smarthome, aes(x=created, y=retweetCount)) +
+  geom_line(col='orange')+ labs(x="Time", y="Number of Retweets")
+
+grid.arrange(timeline1, timeline2, ncol=2)
+```
+
+
+
+
+
+
+
+
