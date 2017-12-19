@@ -1,0 +1,12 @@
+name: twitterdata
+title: TwitterData
+username:
+account: sarahlmy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 250139
+bundleId: 1142145
+url: https://sarahlmy.shinyapps.io/twitterdata/
+when: 1513659019.59473
+asMultiple: FALSE
+asStatic: FALSE

@@ -79,7 +79,7 @@ saveRDS(googlehome, file="googlehome.rds")
 
 echodot <- searchTwitter('echodot',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
 echodot <- twListToDF(echodot)
-saveRDS(googlehome, file="echodot.rds")
+saveRDS(echodot, file="echodot.rds")
 ```
 
 # 2. Word cloud - A helicopter View

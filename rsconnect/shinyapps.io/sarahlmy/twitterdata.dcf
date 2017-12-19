@@ -1,12 +1,12 @@
-name: Twitter-MA-615-Final-Project
+name: twitterdata
 title: Twitter-MA-615-Final-Project
 username:
 account: sarahlmy
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 250090
-bundleId: 1142096
-url: https://sarahlmy.shinyapps.io/Twitter-MA-615-Final-Project/
-when: 1513657007.25464
+appId: 250139
+bundleId: 1142169
+url: https://sarahlmy.shinyapps.io/twitterdata/
+when: 1513660071.5369
 asMultiple: FALSE
 asStatic: FALSE

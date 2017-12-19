@@ -6,7 +6,7 @@
 #
 #    http://shiny.rstudio.com/
 #
-
+rsconnect::setAccountInfo(name='sarahlmy', token='4C0E18C9AE058FD180CD7641CD9D1FC3', secret='Hp/ITczNq+e5NC/Lsu5VzztNf4EyHqwm1d5cg1d2')
 library(shiny)
 library(markdown)
 library(tm)
@@ -15,6 +15,8 @@ library(memoise)
 library(stringr)
 library(leaflet)
 library(ggplot2)
+library(rsconnect)
+library(XML)
 
 # Input Data
 
@@ -136,7 +138,7 @@ tabPanel("Map",
 
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- shinyServer(function(input, output) {
 #Map
     output$map <- renderLeaflet({
     leaflet(data = mapdata)%>%
@@ -181,7 +183,7 @@ server <- function(input, output) {
         geom_line(col='orange')+labs(x="Time", y="Number of retweets")
     }
   })
-}  
+} ) 
      
 
 
