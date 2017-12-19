@@ -7,6 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 rsconnect::setAccountInfo(name='sarahlmy', token='4C0E18C9AE058FD180CD7641CD9D1FC3', secret='Hp/ITczNq+e5NC/Lsu5VzztNf4EyHqwm1d5cg1d2')
+
 library(shiny)
 library(markdown)
 library(tm)
@@ -17,6 +18,26 @@ library(leaflet)
 library(ggplot2)
 library(rsconnect)
 library(XML)
+library(plyr)
+library(devtools)
+library(twitteR)
+library(tidyverse)
+library(streamR)
+library(wordcloud)
+library(tm)
+library(SnowballC)
+library(stringr)
+library(RColorBrewer)
+library(reshape2)
+library(sentimentr)
+library(ggplot2)
+library(tidytext)
+library(ggmap)
+library(maptools)
+library(maps)
+library(gridExtra)
+library(leaflet)
+library(knitr)
 
 # Input Data
 
@@ -28,6 +49,10 @@ result_google <- readRDS('result_google.rds')
 result_echo <- readRDS('result_echo.rds')
 
 mapdata <- readRDS('smarthome_geo.rds')
+mapdata$longitude<-as.numeric(mapdata$longitude)
+mapdata$latitude<-as.numeric(mapdata$latitude)
+x <- mapdata$longitude
+y <- mapdata$latitude
 
 home <- c('Home Smart', 'Echo Dot', 'Google Home')
 

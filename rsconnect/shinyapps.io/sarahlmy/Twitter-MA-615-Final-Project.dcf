@@ -5,8 +5,9 @@ account: sarahlmy
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 250090
-bundleId: 1142096
+bundleId: 1142131
 url: https://sarahlmy.shinyapps.io/Twitter-MA-615-Final-Project/
-when: 1513657007.25464
+when: 1513658620.27632
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: .httr-oauth|echodot.png|googlehome.jpeg|MA615_Final_Project.html|MA615_Final_Project.Rmd|MA615_Slides.html|MA615_Slides.Rmd|README.md|Slides_twitter-figure/unnamed-chunk-2-1.png
