@@ -34,7 +34,7 @@ library(knitr)
 
 
 
-```{r, , warning= FALSE}
+```{r, , warning= FALSE, message=FALSE}
 api_key <- 	"a7mnlj2IxKAx5HQPyp47RSDcF"
 api_secret <- "tWhIRKBBFR3AAPhS8pJYfjywos1pxXcymjPsSKDKAjwkByHHeW"
 access_token <- "927637519667269632-t5qJ7vvlWcgBb6ZQpSqsdC1TOznasxj"
@@ -46,11 +46,22 @@ setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
 
 Smart Home is building automation for a home. It involves the control and automation of lighting, heating (such as smart thermostats), ventilation, air conditioning (HVAC), and security, as well as home appliances such as washer/dryers, ovens or refrigerators/freezers. Wi-Fi is often used for remote monitoring and control. Home devices, when remotely monitored and controlled via the Internet, are an important constituent of the Internet of Things.
 
-This analysis compares two smart home product I like most, Google Home Mini and Echo Dot. Through Google Home I can get hands-free help from the Google Assistant. Get answers, play songs, tackle your day, enjoy your entertainment and control your smart home with just my voice. Echo Pot is a similar product made by Amazon"
+This analysis compares two smart home product I like most, Google Home Mini and Echo Dot. Through Google Home I can get hands-free help from the Google Assistant. Get answers, play songs, tackle your day, enjoy your entertainment and control your smart home with just my voice. 
+
+```{r echo=FALSE, out.width='30%'}
+knitr::include_graphics('googlehome.jpeg')
+```
+
+Amazon Echo (shortened and referred to as Echo) is a brand of smart speakers developed by Amazon.com. The devices connect to the voice-controlled intelligent personal assistant service Alexa, which responds to the name "Alexa". The device is capable of voice interaction, music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic and other real-time information. It can also control several smart devices using itself as a home automation hub.\newline
+
+```{r echo=FALSE, out.width='30%'}
+knitr::include_graphics('echodot.png')
+```
 
 For more information, visit product webpage. 
 Google home: https://store.google.com/product/google_home
 Echo Dot:https://www.amazon.com/Amazon-Echo-Dot-Previous-Generation/b?ie=UTF8&node=14047587011
+
 ```{r, warning= FALSE}
 smarthome1 <- searchTwitter('smarthome',since = "2010-01-01", until = "2017-12-15", lang = "en", n = 20000)
 smarthome1 <- twListToDF(smarthome1)
@@ -62,12 +73,20 @@ smarthome <- searchTwitter('smarthome',since = "2017-01-01", until = "2017-12-15
 smarthome <- twListToDF(smarthome)
 saveRDS(smarthome, file="SmartHome.rds")
 
+googlehome <- searchTwitter('googlehome',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
+googlehome <- twListToDF(googlehome)
+saveRDS(googlehome, file="googlehome.rds")
+
+echodot <- searchTwitter('echodot',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
+echodot <- twListToDF(echodot)
+saveRDS(googlehome, file="echodot.rds")
 ```
 
 # 2. Word cloud - A helicopter View
 
-##"Home Smart"
-```{r}
+###"Home Smart"
+```{r, warning= FALSE}
+smarthome <- readRDS('SmartHome.rds')
 smarthome$text <- iconv(smarthome$text,from = "latin1", to = "ASCII", sub = "")
 ## Create a corpus.
 wordCorpus <- Corpus(VectorSource(str_replace_all(smarthome$text, "@","")))
@@ -88,13 +107,11 @@ set.seed(123)
 wordcloud(wordCorpus, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
 
 ```
-## "Google Home"
 
-```{r}
-googlehome <- searchTwitter('googlehome',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
-googlehome <- twListToDF(googlehome)
-saveRDS(googlehome, file="googlehome.rds")
+### "Google Home"
 
+```{r, warning= FALSE}
+googlehome <- readRDS('googlehome.rds')
 googlehome$text <- iconv(googlehome$text,from = "latin1", to = "ASCII", sub = "")
 ## Create a corpus.
 wordCorpus2 <- Corpus(VectorSource(str_replace_all(googlehome$text, "@","")))
@@ -106,8 +123,6 @@ wordCorpus2 <- tm_map(wordCorpus2, content_transformer(tolower))
 wordCorpus2 <- tm_map(wordCorpus2, removeWords, stopwords('english'))
 wordCorpus2 <- tm_map(wordCorpus2, removeWords, c('the', 'this', stopwords('english')))
 wordCorpus2 <- tm_map(wordCorpus2, removeWords, c('smarthome'))
-
-## Perform stemming.
 wordCorpus2 <- tm_map(wordCorpus2, stemDocument)
 
 ## Plot
@@ -115,12 +130,9 @@ set.seed(123)
 wordcloud(wordCorpus2, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot.per=0.35, use.r.layout=FALSE, colors = brewer.pal(4, "Dark2"))
 ```
 
-## "Echo Dot"
+### "Echo Dot"
 
-```{r}
-echodot <- searchTwitter('echodot',since = "2015-01-01", until = "2017-12-15", lang = "en", n = 2000)
-echodot <- twListToDF(echodot)
-
+```{r, warning= FALSE}
 echodot <- readRDS('echodot.rds')
 echodot$text <- iconv(echodot$text,from = "latin1", to = "ASCII", sub = "")
 ## Create a corpus.
@@ -133,8 +145,6 @@ wordCorpus1 <- tm_map(wordCorpus1, content_transformer(tolower))
 wordCorpus1 <- tm_map(wordCorpus1, removeWords, stopwords('english'))
 wordCorpus1 <- tm_map(wordCorpus1, removeWords, c('the', 'this', stopwords('english')))
 wordCorpus1 <- tm_map(wordCorpus1, removeWords, c('smarthome'))
-
-## Perform stemming.
 wordCorpus1 <- tm_map(wordCorpus1, stemDocument)
 ## Plot
 set.seed(123)
@@ -144,7 +154,7 @@ wordcloud(wordCorpus1, scale=c(5,0.5), max.words = 80, random.order = FALSE, rot
 
 # 3. Sentiment Analysis
 
-```{r}
+```{r, warning= FALSE}
 pos.words <- scan("positive-words.txt",what="character",comment.char=";")
 neg.words <- scan("negative-words.txt",what="character",comment.char=";")
 
@@ -196,36 +206,32 @@ echodot$text <- str_replace_all(echodot$text, "@", "")
 echodot$text <- str_replace_all(echodot$text, "#", "")
 result_echo <- score.sentiment(echodot$text,pos.words,neg.words)
 
-bar_echo <- ggplot(result_echo,aes(result_echo$score))+geom_bar(width = 0.3)
-
 googlehome <- readRDS("googlehome.rds")
 googlehome$text <- str_replace_all(googlehome$text, "@", "")
 googlehome$text <- str_replace_all(googlehome$text, "#", "")
 result_google <- score.sentiment(googlehome$text,pos.words,neg.words)
 
-bar_google <- ggplot(result_google,aes(result_google$score))+geom_bar(width = 0.3)
 saveRDS(result_echo, file="result_echo.rds")
 saveRDS(result_google, file="result_google.rds")
 
-grid.arrange(bar_echo, bar_google, ncol=2)
+result_echo <- readRDS('result_echo.rds')
+result_google <- readRDS('result_google.rds')
+
+bar_echo <- ggplot(result_echo,aes(result_echo$score))+geom_bar(width = 0.3, fill='orange') +labs(x="Sentiment score for Echo Dot")
+bar_google <- ggplot(result_google,aes(result_google$score))+geom_bar(width = 0.3, fill='orange') +labs(x="Sentiment score for Google Home")
+
+grid.arrange(bar_google, bar_echo, ncol=2)
 ```
+The gragh above shows the setiment score of these two products. Apparently Amazon Echo is recieving more positive comments than Google Home. 
+
+This is not a efficient analysis since most of comments have score zero. This shows that most of tweets didn't have any positive or negative comment.
 
 
-```{r}
-mapdata<-readRDS("smarthome_geo.rds")
-mapdata$longitude<-as.numeric(mapdata$longitude)
-mapdata$latitude<-as.numeric(mapdata$latitude)
-x <- mapdata$longitude
-y <- mapdata$latitude
+# 4. Time Line
 
-leaflet(data = mapdata)%>%
-  addTiles()%>%
-  addCircleMarkers(~x,~y, col="red")
+###Time line of the number of favourates and retweets of the topic "Smart Home" in one day.
 
-```
-
-
-```{r}
+```{r, warning= FALSE}
 smarthome <- readRDS("SmartHome.rds")
 smarthome$favoriteCount <- as.numeric(smarthome$favoriteCount)
 
@@ -237,7 +243,30 @@ timeline2 <- ggplot(smarthome, aes(x=created, y=retweetCount)) +
 grid.arrange(timeline1, timeline2, ncol=2)
 ```
 
+# 5. Map
 
+### Location of tweets related to the topic "Smart Home" created.
+
+```{r, warning= FALSE}
+mapdata<-readRDS("smarthome_geo.rds")
+mapdata$longitude<-as.numeric(mapdata$longitude)
+mapdata$latitude<-as.numeric(mapdata$latitude)
+x <- mapdata$longitude
+y <- mapdata$latitude
+
+map <- NULL
+mapWorld <- borders("world", colour="light blue", fill="gray50") # create a layer of borders
+map <- ggplot() +   mapWorld
+map <- map+ geom_point(aes(x, y), data = mapdata ,color="orange", size=2) 
+map
+
+#leaflet(data = mapdata)%>%
+#  addTiles()%>%
+#  addCircleMarkers(~x,~y, col="red")
+
+```
+
+The location of the tweets in the topic "Smart Home" created are most in United States.
 
 
 

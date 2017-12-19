@@ -2,7 +2,8 @@
 title: "MA615 Twitter Data Mining Project"
 author: "Mengyun Li"
 date: "Dec 18, 2017"
-output: slidy_presentation
+output:
+  slidy_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -33,11 +34,25 @@ library(knitr)
 
 - Smart Home is building automation for a home. It involves the control and automation of lighting, heating (such as smart thermostats), ventilation, air conditioning (HVAC), and security, as well as home appliances such as washer/dryers, ovens or refrigerators/freezers. Wi-Fi is often used for remote monitoring and control. Home devices, when remotely monitored and controlled via the Internet, are an important constituent of the Internet of Things.
 
-- This analysis compares two smart home product I like most, Google Home Mini and Echo Dot. Through Google Home I can get hands-free help from the Google Assistant. Get answers, play songs, tackle your day, enjoy your entertainment and control your smart home with just my voice. Echo Pot is a similar product made by Amazon"
+- This analysis compares two smart home product I like most, Google Home Mini and Echo Dot. 
 
 - For more information, visit product webpage.\newline 
 Google home: https://store.google.com/product/google_home \newline
 Echo Dot:https://www.amazon.com/Amazon-Echo-Dot-Previous-Generation/b?ie=UTF8&node=14047587011 
+
+## Google Home
+Through Google Home I can get hands-free help from the Google Assistant. Get answers, play songs, tackle your day, enjoy your entertainment and control your smart home with just my voice.\newline
+
+```{r echo=FALSE, out.width='30%'}
+knitr::include_graphics('googlehome.jpeg')
+```
+
+## Echo Dot
+Amazon Echo (shortened and referred to as Echo) is a brand of smart speakers developed by Amazon.com. The devices connect to the voice-controlled intelligent personal assistant service Alexa, which responds to the name "Alexa". The device is capable of voice interaction, music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic and other real-time information. It can also control several smart devices using itself as a home automation hub.\newline
+
+```{r echo=FALSE, out.width='30%'}
+knitr::include_graphics('echodot.png')
+```
 
 ## Word Cloud - "Smart Home"
 ```{r, echo=FALSE}
@@ -115,19 +130,42 @@ bar_google <- ggplot(result_google,aes(result_google$score))+geom_bar(width = 0.
 grid.arrange(bar_google, bar_echo, ncol=2)
 ```
 
+The gragh above shows the setiment score of these two products. Apparently Amazon Echo is recieving more positive comments than Google Home. 
+
+This is not a efficient analysis since most of comments have score zero. This shows that most of tweets didn't have any positive or negative comment.
+
 ## Time line
+###Time line of the number of favourates and retweets of the topic "Smart Home" in one day.
+
+```{r}
+smarthome <- readRDS("SmartHome.rds")
+smarthome$favoriteCount <- as.numeric(smarthome$favoriteCount)
+
+timeline1 <- ggplot(smarthome, aes(x=created, y=favoriteCount)) +
+  geom_line(col='orange')+labs(x="Time", y="Number of Favourates")
+timeline2 <- ggplot(smarthome, aes(x=created, y=retweetCount)) +
+  geom_line(col='orange')+ labs(x="Time", y="Number of Retweets")
+
+grid.arrange(timeline1, timeline2, ncol=2)
+```
 
 ## Map
+### Location of tweets related to the topic "Smart Home" created.
+```{r}
+mapdata<-readRDS("smarthome_geo.rds")
+mapdata$longitude<-as.numeric(mapdata$longitude)
+mapdata$latitude<-as.numeric(mapdata$latitude)
+x <- mapdata$longitude
+y <- mapdata$latitude
 
-## Slide with R Output
+map <- NULL
+mapWorld <- borders("world", colour="light blue", fill="gray50") # create a layer of borders
+map <- ggplot() +   mapWorld
+map <- map+ geom_point(aes(x, y), data = mapdata ,color="orange", size=2) 
+map
 
-```{r cars, echo = TRUE}
-summary(cars)
 ```
 
-## Slide with Plot
 
-```{r pressure}
-plot(pressure)
-```
+
 

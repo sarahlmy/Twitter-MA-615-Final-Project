@@ -12,6 +12,9 @@ library(markdown)
 library(tm)
 library(wordcloud)
 library(memoise)
+library(stringr)
+library(leaflet)
+library(ggplot2)
 
 # Input Data
 
@@ -54,7 +57,7 @@ wordCorpus2 <- tm_map(wordCorpus2, removeWords, c('googlehome'))
 wordCorpus2 <- tm_map(wordCorpus2, stemDocument)
 
 # Define UI 
-ui <- fluidPage(theme="bootstrap.css",
+ui <- shinyUI(fluidPage(theme="bootstrap.css",
                 titlePanel(fluidRow(
                   column(3, img(src="title.png", height=108, width=150)), 
                   column(8, 
@@ -108,7 +111,7 @@ tabPanel("Word Cloud",
          mainPanel(plotOutput(outputId = "wordcloud"))
          ),
 
-tabPanel("Sentiment Analyse", 
+tabPanel("Sentiment Analysis", 
          sidebarPanel(
            selectInput("type", "Choose a product type:",
                        choices = c('Goolge Home', 'Echo Dot'),selected = 1)
@@ -129,7 +132,7 @@ tabPanel("Map",
          mainPanel(
            leafletOutput("map")
          ))
-))
+)))
 
 
 # Define server logic required to draw a histogram
